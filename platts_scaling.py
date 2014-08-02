@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-"calibrate a classifier's predictions using isotonic regression"
+"calibrate a classifier's predictions using Platt's scaling (logistic regression)"
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sklearn.isotonic import IsotonicRegression as IR
+from sklearn.linear_model import LogisticRegression as LR
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score as AUC
 
@@ -28,11 +28,9 @@ p_test =p[test_start:]
 
 ###
 
-ir = IR( out_of_bounds = 'clip' )	# out_of_bounds param needs scikit-learn >= 0.15
-ir.fit( p_train, y_train )
-p_calibrated = ir.transform( p_test )
-
-p_calibrated[np.isnan( p_calibrated )] = 0
+lr = LR()														# default param values
+lr.fit( p_train.reshape( -1, 1 ), y_train )						# LR needs X to be 2-dimensional
+p_calibrated = lr.predict_proba( p_test.reshape( -1, 1 ))[:,1]
 
 ###
 
@@ -50,9 +48,9 @@ print "AUC - before/after:     ", auc, "/", auc_calibrated
 print "log loss - before/after:", ll, "/", ll_calibrated
 
 """
-accuracy - before/after: 0.847788697789 / 0.845945945946
-AUC - before/after:      0.878139845077 / 0.877184085166
-log loss - before/after: 0.630525772871 / 0.592161024832
+accuracy - before/after: 0.847788697789 / 0.846805896806
+AUC - before/after:      0.878139845077 / 0.878139845077
+log loss - before/after: 0.630525772871 / 0.364873617584
 """
 
 ###
